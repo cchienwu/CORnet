@@ -25,9 +25,9 @@ normalize = torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                              std=[0.229, 0.224, 0.225])
 
 parser = argparse.ArgumentParser(description='ImageNet Training')
-parser.add_argument('--data_path', required=True,
+parser.add_argument('--data_path', required=False,
                     help='path to ImageNet folder that contains train and val folders', 
-                    default="C:/Users/vayze/Desktop/GitHub_Repos/KorNet/stim")
+                    default="C:/Users/vayze/Desktop/GitHub_Repos/KorNet/stim/Test/Outline")
 parser.add_argument('-o', '--output_path', default=None,
                     help='path for storing ')
 parser.add_argument('--model', choices=['Z', 'R', 'RT', 'S'], default='S',
@@ -49,6 +49,8 @@ parser.add_argument('--step_size', default=10, type=int,
 parser.add_argument('--momentum', default=.9, type=float, help='momentum')
 parser.add_argument('--weight_decay', default=1e-4, type=float,
                     help='weight decay ')
+parser.add_argument('--outname',default =None,
+                    help='Name of feature output file')
 
 
 FLAGS, FIRE_FLAGS = parser.parse_known_args()
@@ -218,7 +220,7 @@ def test(layer='decoder', sublayer='avgpool', time_step=0, imsize=224):
     model_feats = []
     with torch.no_grad():
         model_feats = []
-        fnames = sorted(glob.glob(os.path.join(FLAGS.data_path, '*.*')))
+        fnames = sorted(glob.glob(os.path.join(FLAGS.data_path, '*.png')))
         if len(fnames) == 0:
             raise FileNotFoundError(f'No files found in {FLAGS.data_path}')
         for fname in tqdm.tqdm(fnames):
