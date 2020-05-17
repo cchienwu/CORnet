@@ -13,6 +13,8 @@ import torchvision
 import cornet
 
 from PIL import Image
+
+
 Image.warnings.simplefilter('ignore')
 
 np.random.seed(0)
@@ -24,14 +26,15 @@ normalize = torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
 
 parser = argparse.ArgumentParser(description='ImageNet Training')
 parser.add_argument('--data_path', required=True,
-                    help='path to ImageNet folder that contains train and val folders')
+                    help='path to ImageNet folder that contains train and val folders', 
+                    default="C:/Users/vayze/Desktop/GitHub_Repos/KorNet/stim")
 parser.add_argument('-o', '--output_path', default=None,
                     help='path for storing ')
-parser.add_argument('--model', choices=['Z', 'R', 'RT', 'S'], default='Z',
+parser.add_argument('--model', choices=['Z', 'R', 'RT', 'S'], default='S',
                     help='which model to train')
 parser.add_argument('--times', default=5, type=int,
                     help='number of time steps to run the model (only R model)')
-parser.add_argument('--ngpus', default=0, type=int,
+parser.add_argument('--ngpus', default=1, type=int,
                     help='number of GPUs to use; 0 if you want to run on CPU')
 parser.add_argument('-j', '--workers', default=4, type=int,
                     help='number of data loading workers')
@@ -51,27 +54,29 @@ parser.add_argument('--weight_decay', default=1e-4, type=float,
 FLAGS, FIRE_FLAGS = parser.parse_known_args()
 
 
-def set_gpus(n=1):
-    """
-    Finds all GPUs on the system and restricts to n of them that have the most
-    free memory.
-    """
-    gpus = subprocess.run(shlex.split(
-        'nvidia-smi --query-gpu=index,memory.free,memory.total --format=csv,nounits'), check=True, stdout=subprocess.PIPE).stdout
-    gpus = pandas.read_csv(io.BytesIO(gpus), sep=', ', engine='python')
-    gpus = gpus[gpus['memory.total [MiB]'] > 10000]  # only above 10 GB
-    if os.environ.get('CUDA_VISIBLE_DEVICES') is not None:
-        visible = [int(i)
-                   for i in os.environ['CUDA_VISIBLE_DEVICES'].split(',')]
-        gpus = gpus[gpus['index'].isin(visible)]
-    gpus = gpus.sort_values(by='memory.free [MiB]', ascending=False)
-    os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'  # making sure GPUs are numbered the same way as in nvidia_smi
-    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(
-        [str(i) for i in gpus['index'].iloc[:n]])
+#def set_gpus(n=1):
+#    """
+#    Finds all GPUs on the system and restricts to n of them that have the most
+#    free memory.
+#    """
+#    gpus = subprocess.run(shlex.split(
+#        'nvidia-smi --query-gpu=index,memory.free,memory.total --format=csv,nounits'), check=True, stdout=subprocess.PIPE).stdout
+#    gpus = pandas.read_csv(io.BytesIO(gpus), sep=', ', engine='python')
+#    gpus = gpus[gpus['memory.total [MiB]'] > 10000]  # only above 10 GB
+#    if os.environ.get('CUDA_VISIBLE_DEVICES') is not None:
+#        visible = [int(i)
+#                   for i in os.environ['CUDA_VISIBLE_DEVICES'].split(',')]
+#        gpus = gpus[gpus['index'].isin(visible)]
+#    gpus = gpus.sort_values(by='memory.free [MiB]', ascending=False)
+#    os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'  # making sure GPUs are numbered the same way as in nvidia_smi
+#    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(
+#        [str(i) for i in gpus['index'].iloc[:n]])
+#
+#
+#if FLAGS.ngpus > 0:
+#    set_gpus(FLAGS.ngpus)
 
 
-if FLAGS.ngpus > 0:
-    set_gpus(FLAGS.ngpus)
 
 
 def get_model(pretrained=False):
